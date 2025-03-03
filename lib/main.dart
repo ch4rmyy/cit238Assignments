@@ -1,5 +1,5 @@
-import 'package:cit_238_app_states/screens/music_player.dart';
 import 'package:flutter/material.dart';
+import 'screens/music_player.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'AssignmentForUnit3',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
