@@ -13,7 +13,7 @@ class _MusicPlayerState extends State<MusicPlayer> {
   late final AppLifecycleListener _listener;
   bool _isPlaying = false;
   String? _currentSong;
-
+  final TextEditingController _urlController = TextEditingController();
 
   final List<Map<String, String>> _songs = [
     {"title": "Zico - New Thing", "path": "assets/music/Zico-NewThing.mp3"},
@@ -38,10 +38,11 @@ class _MusicPlayerState extends State<MusicPlayer> {
   void dispose() {
     _listener.dispose();
     _audioPlayer.dispose();
+    _urlController.dispose();
     super.dispose();
   }
 
-  Future<void> _playMusicLocal(String path) async { //Play music from local
+  Future<void> _playMusicLocal(String path) async {
     if (_currentSong == path && _isPlaying) {
       await _audioPlayer.pause();
       setState(() {
@@ -95,32 +96,68 @@ class _MusicPlayerState extends State<MusicPlayer> {
           centerTitle: true,
           backgroundColor: Color(0xFFA4DAF1)),
       backgroundColor: Color(0xFFC8E9F6),
-      body: ListView.builder(
-        itemCount: _songs.length,
-        itemBuilder: (context, index) {
-          final song = _songs[index];
-          final isPlaying = _currentSong == (song["path"] ?? song["url"]) && _isPlaying;
-
-          return ListTile(
-            title: Text(song["title"]!),
-            subtitle: Text(isPlaying ? "Music is playing..." : "Tap to play"),
-            leading: Icon(
-              isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
-              color: isPlaying ? Colors.lightBlueAccent : null,
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _urlController,
+                    decoration: const InputDecoration(
+                      hintText: "Input your music URL",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(_isPlaying && _currentSong == _urlController.text
+                      ? Icons.pause_circle_filled
+                      : Icons.play_circle_fill),
+                  onPressed: () {
+                    if (_urlController.text.isNotEmpty) {
+                      if (_isPlaying && _currentSong == _urlController.text) {
+                        _pauseMusic();
+                      } else {
+                        _playMusicOnline(_urlController.text);
+                      }
+                    }
+                  },
+                ),
+              ],
             ),
-            onTap: () {
-              if (isPlaying) {
-                _pauseMusic();
-              } else {
-                if (song.containsKey("path")) {
-                  _playMusicLocal(song["path"]!);
-                } else if (song.containsKey("url")) {
-                  _playMusicOnline(song["url"]!);
-                }
-              }
-            },
-          );
-        },
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _songs.length,
+              itemBuilder: (context, index) {
+                final song = _songs[index];
+                final isPlaying = _currentSong == (song["path"] ?? song["url"]) && _isPlaying;
+
+                return ListTile(
+                  title: Text(song["title"]!),
+                  subtitle: Text(isPlaying ? "Music is playing..." : "Tap to play"),
+                  leading: Icon(
+                    isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
+                    color: isPlaying ? Colors.lightBlueAccent : null,
+                  ),
+                  onTap: () {
+                    if (isPlaying) {
+                      _pauseMusic();
+                    } else {
+                      if (song.containsKey("path")) {
+                        _playMusicLocal(song["path"]!);
+                      } else if (song.containsKey("url")) {
+                        _playMusicOnline(song["url"]!);
+                      }
+                    }
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
